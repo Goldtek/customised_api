@@ -17,8 +17,8 @@ Config = require("./config");
 
 const app: Application = express();
 const port = 8080; // default port to listen
-
-
+const api = require('./api')(app,express,sanitizer);
+app.use('/api', api);
 app.use(fileUpload());
 
 
