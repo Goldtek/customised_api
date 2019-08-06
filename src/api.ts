@@ -4,14 +4,14 @@ import bcryptjs from "bcryptjs";
 import async from "async";
 import fs from "fs";
 import webToken from "jsonwebtoken";
-import userModel from "../model";
+import userModel from "./model";
 const User = require('../model/userSchema'),
     config = require('./config'),
     key = config.secretkey,
     usernames = {};
 
 
-function createToken(user){
+function createToken(user:){
   const token =  webToken.sign({
       name:user.lastname+" "+user.firstname,
       img:user.profileImg,
@@ -20,21 +20,21 @@ function createToken(user){
     return token;
 }
 
-function clean(value: any,res: Response,req: Request){
-    if(typeof value!=='string'){
-        value='';
-        return;
-    }
-    value = req.sanitize(value);
-    return value;
-}
+// function clean(value: any,res: Response,req: Request){
+//     if(typeof value!=='string'){
+//         value='';
+//         return;
+//     }
+//     value = req.sanitize(value);
+//     return value;
+// }
 
-module.exports = (app: Application,express,sanitizer)=>{
+module.exports = (app: Application,express)=>{
    const api = express.Router();
        //user login
        api.post('/login',(req: Request,res: Response)=>{
-        const email=clean(req.body.email,res,req),
-        password=clean(req.body.password,res,req);
+        const email= req.body.email;
+        const password= req.body.password;
     
         User.findOne({email:email}).
         populate({ path: 'country'})
@@ -42,7 +42,7 @@ module.exports = (app: Application,express,sanitizer)=>{
         .populate({ path: 'city'})
         .populate({ path: 'contacts.user',select:'fname sname email state city country_id'})
         .populate({ path: 'vendor.user',select:'fname sname email state city country_id'})
-        .exec(function(err,user){
+        .exec(function(err,user: userModel){
             if(err){ 
                res.json({message:err});
             }
@@ -50,31 +50,15 @@ module.exports = (app: Application,express,sanitizer)=>{
             if(!user){
                 res.status(404).send({ message:'Invalid Username/Password'});
             }else{
-                if(bycrpt.compareSync(password,user.pass)){
+                if(bcryptjs.compareSync(password,user.pass)){
                    
                     const token = createToken(user);
                                             
-                    userObj = {
-                        _id:user._id,
-                        sname:user.sname,
-                        fname :user.fname,
-                        country:user.country,
-                        history:user.history,
-                        usertype:user.usertype,
-                        phone:user.phone,
-                        state:user.state,
-                        city:user.city,
-                        website:user.website,
-                        refers:user.refers,
-                        img:user.profileImg,
-                        regdate:user.Regdate,
-                        status:user.status,
-                   };
                     res.json({
                         success:true,
                         message:'successfully logged In',
                         token:token,
-                        user:userObj
+                        user:user,
                     });
      
                     //update login status to true

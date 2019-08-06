@@ -1,4 +1,5 @@
-var mongoose = require('mongoose'),
+
+const mongoose = require('mongoose'),
 schema = mongoose.Schema;
 
 var userSchema = new schema({
@@ -21,4 +22,4 @@ var userSchema = new schema({
 userSchema.index({ firstname: 'text',lastname:'text',address:'text',city:'text',
     state:'text',country:'text'});
 
-module.exports = mongoose.model('user',userSchema);
+export default mongoose.model('user',userSchema);
