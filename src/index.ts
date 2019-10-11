@@ -18,14 +18,13 @@ Config = require("./config");
 const app: Application = express();
 const port = 8080; // default port to listen
 
-
 app.use(fileUpload());
 
 
 app.use(cors());
 app.use(logger('dev'))
-
 app.use(bodyParser.json())
+app.use(sanitizer())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(sanitizer())
 app.use(cookieParser())
@@ -44,6 +43,8 @@ app.use(function(req: Request,res: Response,next: NextFunction){
   res.locals.csrftoken = req.csrfToken();
     next();
 })
+const api = require('./api')(app,express);
+app.use('/api', api);
 //connecting to database
 mongoose.connect(Config.database, { useNewUrlParser: true });
 
